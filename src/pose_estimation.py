@@ -1,83 +1,107 @@
 import cv2
 import numpy as np
+import os
+import argparse
 import matplotlib.pyplot as plt
 
+# Define body parts
+BODY_PARTS = {
+    "Nose": 0, "Neck": 1, "RShoulder": 2, "RElbow": 3, "RWrist": 4,
+    "LShoulder": 5, "LElbow": 6, "LWrist": 7, "RHip": 8, "RKnee": 9,
+    "RAnkle": 10, "LHip": 11, "LKnee": 12, "LAnkle": 13, "REye": 14,
+    "LEye": 15, "REar": 16, "LEar": 17, "Background": 18
+}
 
-BODY_PARTS = { "Nose": 0, "Neck": 1, "RShoulder": 2, "RElbow": 3, "RWrist": 4,
-               "LShoulder": 5, "LElbow": 6, "LWrist": 7, "RHip": 8, "RKnee": 9,
-               "RAnkle": 10, "LHip": 11, "LKnee": 12, "LAnkle": 13, "REye": 14,
-               "LEye": 15, "REar": 16, "LEar": 17, "Background": 18 }
+# Define pose pairs (connections between key points)
+POSE_PAIRS = [
+    ["Neck", "RShoulder"], ["Neck", "LShoulder"], ["RShoulder", "RElbow"],
+    ["RElbow", "RWrist"], ["LShoulder", "LElbow"], ["LElbow", "LWrist"],
+    ["Neck", "RHip"], ["RHip", "RKnee"], ["RKnee", "RAnkle"], ["Neck", "LHip"],
+    ["LHip", "LKnee"], ["LKnee", "LAnkle"], ["Neck", "Nose"], ["Nose", "REye"],
+    ["REye", "REar"], ["Nose", "LEye"], ["LEye", "LEar"]
+]
 
-POSE_PAIRS = [ ["Neck", "RShoulder"], ["Neck", "LShoulder"], ["RShoulder", "RElbow"],
-               ["RElbow", "RWrist"], ["LShoulder", "LElbow"], ["LElbow", "LWrist"],
-               ["Neck", "RHip"], ["RHip", "RKnee"], ["RKnee", "RAnkle"], ["Neck", "LHip"],
-               ["LHip", "LKnee"], ["LKnee", "LAnkle"], ["Neck", "Nose"], ["Nose", "REye"],
-               ["REye", "REar"], ["Nose", "LEye"], ["LEye", "LEar"] ]
+# Model input dimensions
+IN_WIDTH = 368
+IN_HEIGHT = 368
+THRESHOLD = 0.2
+
+# Set paths relative to the project structure
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODEL_PATH = os.path.join(BASE_DIR, "models", "graph_opt.pb")
+OUTPUT_DIR = os.path.join(BASE_DIR, "outputs")
+
+# Ensure model exists
+if not os.path.exists(MODEL_PATH):
+    raise FileNotFoundError(f"Error: Model file '{MODEL_PATH}' not found!")
+
+# Load the pre-trained model
+net = cv2.dnn.readNetFromTensorflow(MODEL_PATH)
 
 
-width = 368
-height = 368
-inWidth = width
-inHeight = height
+def pose_detector(frame):
+    """Detects and draws pose keypoints on an input frame."""
+    frame_height, frame_width = frame.shape[:2]
+    net.setInput(cv2.dnn.blobFromImage(frame, 1.0, (IN_WIDTH, IN_HEIGHT),
+                                       (127.5, 127.5, 127.5), swapRB=True, crop=False))
 
-net = cv2.dnn.readNetFromTensorflow("graph_opt.pb")
+    output = net.forward()[:, :19, :, :]  # Get first 19 keypoints
+    assert len(BODY_PARTS) == output.shape[1]
 
-thres = 0.2
-
-
-def poseDetector(frame):
-    frameWidth = frame.shape[1]
-    frameHeight = frame.shape[0]
-    
-    net.setInput(cv2.dnn.blobFromImage(frame, 1.0, (inWidth, inHeight), (127.5, 127.5, 127.5), swapRB=True, crop=False))
-    
-    out = net.forward()
-    out = out[:, :19, :, :]
-    
-    assert(len(BODY_PARTS) == out.shape[1])
-    
     points = []
     for i in range(len(BODY_PARTS)):
-        # Slice heatmap of corresponging body's part.
-        heatMap = out[0, i, :, :]
+        heat_map = output[0, i, :, :]
+        _, confidence, _, point = cv2.minMaxLoc(heat_map)
 
-        _, conf, _, point = cv2.minMaxLoc(heatMap)
-        x = (frameWidth * point[0]) / out.shape[3]
-        y = (frameHeight * point[1]) / out.shape[2]
-        points.append((int(x), int(y)) if conf > thres else None)
-        
-        
+        x = int((frame_width * point[0]) / output.shape[3])
+        y = int((frame_height * point[1]) / output.shape[2])
+
+        points.append((x, y) if confidence > THRESHOLD else None)
+
+    # Draw lines and keypoints
     for pair in POSE_PAIRS:
-        partFrom = pair[0]
-        partTo = pair[1]
-        assert(partFrom in BODY_PARTS)
-        assert(partTo in BODY_PARTS)
+        part_from, part_to = pair
+        id_from, id_to = BODY_PARTS[part_from], BODY_PARTS[part_to]
 
-        idFrom = BODY_PARTS[partFrom]
-        idTo = BODY_PARTS[partTo]
+        if points[id_from] and points[id_to]:
+            cv2.line(frame, points[id_from], points[id_to], (0, 255, 0), 3)
+            cv2.circle(frame, points[id_from], 5, (0, 0, 255), cv2.FILLED)
+            cv2.circle(frame, points[id_to], 5, (0, 0, 255), cv2.FILLED)
 
-        if points[idFrom] and points[idTo]:
-            cv2.line(frame, points[idFrom], points[idTo], (0, 255, 0), 3)
-            cv2.ellipse(frame, points[idFrom], (3, 3), 0, 0, 360, (0, 0, 255), cv2.FILLED)
-            cv2.ellipse(frame, points[idTo], (3, 3), 0, 0, 360, (0, 0, 255), cv2.FILLED)
-            
-            
-    t, _ = net.getPerfProfile()
-    
     return frame
 
-input = cv2.imread('stand.jpg')
 
-output = poseDetector(input)
+def visualize_result(image):
+    """Displays the processed image using Matplotlib."""
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    plt.figure(figsize=(10, 6))
+    plt.imshow(image_rgb)
+    plt.axis("off")
+    plt.show()
 
 
-cv2.imwrite("OutPut-image.png",output)
+def main():
+    parser = argparse.ArgumentParser(description="Pose Estimation using OpenCV and TensorFlow")
+    parser.add_argument("--image", type=str, required=True, help="Path to input image")
+    args = parser.parse_args()
+
+    # Validate input image
+    if not os.path.exists(args.image):
+        raise FileNotFoundError(f"Error: Image file '{args.image}' not found!")
+
+    # Load and process image
+    input_image = cv2.imread(args.image)
+    output_image = pose_detector(input_image)
+
+    # Save output
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    output_path = os.path.join(OUTPUT_DIR, "output_image.png")
+    cv2.imwrite(output_path, output_image)
+    print(f"Processed image saved at: {output_path}")
+
+    # Display result
+    visualize_result(output_image)
 
 
-cv2.waitKey(0)
-cv2.destroyAllWindows()
-
-        
-        
-
-    
+if __name__ == "__main__":
+    main()
