@@ -1,0 +1,9 @@
+# Virtual Environment
+venv/
+.venv/
+
+# Trained Models and Weights
+*.pb
+
+# VS Code settings
+.vscode/
