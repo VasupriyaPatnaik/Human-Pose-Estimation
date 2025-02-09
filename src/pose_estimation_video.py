@@ -18,7 +18,7 @@ POSE_PAIRS = [
 ]
 
 # Load the neural network model
-net = cv2.dnn.readNetFromTensorflow("C:\Users\DELL\OneDrive\Documents\Human-Pose-Estimation\models\graph_opt.pb")
+net = cv2.dnn.readNetFromTensorflow("graph_opt.pb")
 
 # Set input image dimensions
 inWidth, inHeight = 368, 368

@@ -26,7 +26,7 @@ width, height = 368, 368
 @st.cache_resource
 def load_model():
     try:
-        model_path = "C:\Users\DELL\OneDrive\Documents\Human-Pose-Estimation\models\graph_opt.pb"  # Ensure this file exists in the working directory
+        model_path = "graph_opt.pb"  # Ensure this file exists in the working directory
         net = cv2.dnn.readNetFromTensorflow(model_path)
         return net
     except cv2.error as e:
