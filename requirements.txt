@@ -1,3 +1,4 @@
+#pip install --upgrade opencv-python-headless streamlit numpy matplotlib Pillow
 opencv-python-headless==4.9.0.80
 streamlit==1.32.0
 numpy==1.26.4
