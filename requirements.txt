@@ -1,5 +1,5 @@
-opencv_python_headless==4.5.1.48
-streamlit==0.76.0
-numpy==1.18.5
-matplotlib==3.3.2
-Pillow==8.1.2
+opencv-python-headless==4.9.0.80
+streamlit==1.32.0
+numpy==1.26.4
+matplotlib==3.8.2
+Pillow==10.2.0
