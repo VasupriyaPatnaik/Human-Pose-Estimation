@@ -37,7 +37,7 @@ Human Pose Estimation (HPE) is a critical task in computer vision that involves 
 ## **📸 Sample Output**  
 | Input Image | Pose Estimation Output |
 |-------------|------------------------|
-| ![Input](https://user-images.com/sample-input.jpg) | ![Output](https://user-images.com/sample-output.jpg) |
+| ![Input](https://github.com/VasupriyaPatnaik/Human-Pose-Estimation/blob/main/media/stand.jpg) | ![Output](https://github.com/VasupriyaPatnaik/Human-Pose-Estimation/blob/main/outputs/stand_output.png) |
 
 ## **⚙️ Installation & Setup**  
 ### **1️⃣ Clone the Repository**  
