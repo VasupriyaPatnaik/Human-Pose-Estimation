@@ -19,21 +19,6 @@ Human Pose Estimation (HPE) is a critical task in computer vision that involves 
 - **Model Architecture**: PoseNet, OpenPose, or custom CNN-based keypoint detection  
 - **Deployment**: Flask/FastAPI for API integration  
 
-## **📂 Project Structure**  
-```plaintext
-📦 Human-Pose-Estimation
- ┣ 📂 data/               # Dataset storage
- ┣ 📂 models/             # Trained models
- ┣ 📂 src/                # Source code
- ┃ ┣ 📜 model.py          # ML model for pose estimation
- ┃ ┣ 📜 test_model.py     # Model testing script
- ┃ ┣ 📜 preprocess.py     # Data preprocessing
- ┣ 📜 requirements.txt     # Dependencies
- ┣ 📜 README.md            # Project documentation
- ┣ 📜 .gitignore           # Files to exclude from version control
- ┗ 📜 app.py               # API for pose estimation
-```
-
 ## **📸 Sample Output**  
 | Input Image | Pose Estimation Output |
 |-------------|------------------------|
@@ -82,6 +67,6 @@ This project is inspired by research in **computer vision and deep learning** an
 🔗 **Contributions are Welcome!**  
 If you find this project interesting, feel free to **fork, improve, and contribute**! 😊  
 
-📩 **Have a question?** Contact me at [vasupriya@gmail.com](mailto:vasupriyapatnaikbalivada@gmail.com)  
+📩 **Have a question?** Contact me at [vasupriyapatnaikbalivada@gmail.com](mailto:vasupriyapatnaikbalivada@gmail.com)  
 
 ⭐ **If you like this project, give it a star!** 🚀✨  
